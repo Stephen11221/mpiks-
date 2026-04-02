@@ -7,6 +7,9 @@ const pageLoader = document.getElementById("pageLoader");
 const currentYear = document.getElementById("currentYear");
 const contactForm = document.getElementById("contactForm");
 const formStatus = document.getElementById("formStatus");
+const heroVisual = document.getElementById("heroVisual");
+const parallaxImage = document.querySelector("[data-parallax-image]");
+const counters = document.querySelectorAll("[data-counter]");
 
 if (menuButton && mobileMenu) {
   menuButton.addEventListener("click", () => {
@@ -20,6 +23,12 @@ mobileLinks.forEach((link) => {
   });
 });
 
+const revealElements = document.querySelectorAll(".reveal");
+
+revealElements.forEach((element, index) => {
+  element.style.transitionDelay = `${Math.min(index * 70, 280)}ms`;
+});
+
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
@@ -31,9 +40,69 @@ const observer = new IntersectionObserver(
   { threshold: 0.18 }
 );
 
-document.querySelectorAll(".reveal").forEach((element) => {
+revealElements.forEach((element) => {
   observer.observe(element);
 });
+
+function animateCounter(element) {
+  const target = Number(element.dataset.target || 0);
+  const decimals = Number(element.dataset.decimals || 0);
+  const suffix = element.dataset.suffix || "";
+  const duration = 1400;
+  const startTime = performance.now();
+
+  function step(currentTime) {
+    const progress = Math.min((currentTime - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const currentValue = target * eased;
+    const formatted = decimals > 0 ? currentValue.toFixed(decimals) : Math.round(currentValue).toString();
+
+    element.textContent = `${formatted}${suffix}`;
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      const finalValue = decimals > 0 ? target.toFixed(decimals) : target.toString();
+      element.textContent = `${finalValue}${suffix}`;
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
+const counterObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && !entry.target.dataset.counted) {
+        entry.target.dataset.counted = "true";
+        animateCounter(entry.target);
+      }
+    });
+  },
+  { threshold: 0.6 }
+);
+
+counters.forEach((counter) => {
+  counterObserver.observe(counter);
+});
+
+if (heroVisual && parallaxImage && window.matchMedia("(min-width: 1024px)").matches) {
+  heroVisual.addEventListener("mousemove", (event) => {
+    const rect = heroVisual.getBoundingClientRect();
+    const offsetX = event.clientX - rect.left;
+    const offsetY = event.clientY - rect.top;
+    const rotateY = ((offsetX / rect.width) - 0.5) * 8;
+    const rotateX = (0.5 - (offsetY / rect.height)) * 8;
+
+    heroVisual.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    parallaxImage.style.transform = `scale(1.06) translate(${rotateY * 1.5}px, ${-rotateX * 1.5}px)`;
+  });
+
+  heroVisual.addEventListener("mouseleave", () => {
+    heroVisual.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg)";
+    parallaxImage.style.transform = "scale(1)";
+  });
+}
 
 function updateClock() {
   const now = new Date();
