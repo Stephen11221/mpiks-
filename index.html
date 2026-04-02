@@ -374,33 +374,48 @@
                 <span id="mobileLiveClock" class="rounded-full border border-white/10 bg-black/40 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/70 lg:hidden">Time --:--:--</span>
               </div>
 
-              <form class="mt-8 grid gap-4 sm:grid-cols-2">
+              <form id="contactForm" class="mt-8 grid gap-4 sm:grid-cols-2">
                 <input
                   type="text"
+                  name="name"
+                  id="contactName"
                   placeholder="Your name"
+                  required
                   class="rounded-2xl border border-white/10 bg-black/80 px-5 py-4 text-white outline-none transition placeholder:text-white/35 focus:border-gold"
                 />
                 <input
                   type="email"
+                  name="email"
+                  id="contactEmail"
                   placeholder="Email address"
+                  required
                   class="rounded-2xl border border-white/10 bg-black/80 px-5 py-4 text-white outline-none transition placeholder:text-white/35 focus:border-gold"
                 />
                 <input
                   type="text"
+                  name="session"
+                  id="contactSession"
                   placeholder="Session type"
+                  required
                   class="rounded-2xl border border-white/10 bg-black/80 px-5 py-4 text-white outline-none transition placeholder:text-white/35 focus:border-gold sm:col-span-2"
                 />
                 <textarea
                   rows="5"
+                  name="message"
+                  id="contactMessage"
                   placeholder="Tell us about your project"
+                  required
                   class="rounded-2xl border border-white/10 bg-black/80 px-5 py-4 text-white outline-none transition placeholder:text-white/35 focus:border-gold sm:col-span-2"
                 ></textarea>
                 <button
-                  type="button"
+                  type="submit"
                   class="rounded-full border border-gold bg-gold px-7 py-4 text-sm font-bold uppercase tracking-[0.25em] text-black transition hover:scale-[1.02] hover:bg-white sm:col-span-2 sm:w-fit"
                 >
                   Send Inquiry
                 </button>
+                <p id="formStatus" class="text-sm leading-7 text-white/60 sm:col-span-2">
+                  Clicking send will open your email app with a ready-made message to `muema1476@gmail.com`.
+                </p>
               </form>
             </div>
 
@@ -421,7 +436,7 @@
                   </div>
                   <div>
                     <div class="text-xs uppercase tracking-[0.35em] text-gold">Email</div>
-                    <div class="mt-2 text-base font-semibold text-white sm:text-lg">hello@mpiksphotograph.com</div>
+                    <div class="mt-2 text-base font-semibold text-white sm:text-lg">muema1476@gmail.com</div>
                   </div>
                   <div>
                     <div class="text-xs uppercase tracking-[0.35em] text-gold">Location</div>
@@ -441,7 +456,7 @@
 
     <footer class="border-t border-white/10 px-6 py-8 lg:px-10">
       <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2026 MPIKS Photograph. Black and gold visual storytelling.</p>
+        <p>© <span id="currentYear">2026</span> MPIKS Photograph. Black and gold visual storytelling.</p>
         <a href="#home" class="font-semibold uppercase tracking-[0.25em] text-gold">Back to Top</a>
       </div>
     </footer>
@@ -453,6 +468,9 @@
       const liveClock = document.getElementById("liveClock");
       const mobileLiveClock = document.getElementById("mobileLiveClock");
       const pageLoader = document.getElementById("pageLoader");
+      const currentYear = document.getElementById("currentYear");
+      const contactForm = document.getElementById("contactForm");
+      const formStatus = document.getElementById("formStatus");
 
       menuButton.addEventListener("click", () => {
         mobileMenu.classList.toggle("hidden");
@@ -498,6 +516,41 @@
 
       updateClock();
       setInterval(updateClock, 1000);
+
+      if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+      }
+
+      if (contactForm) {
+        contactForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+
+          const name = document.getElementById("contactName")?.value.trim();
+          const email = document.getElementById("contactEmail")?.value.trim();
+          const session = document.getElementById("contactSession")?.value.trim();
+          const message = document.getElementById("contactMessage")?.value.trim();
+
+          if (!name || !email || !session || !message) {
+            if (formStatus) {
+              formStatus.textContent = "Please fill in all fields before sending your inquiry.";
+              formStatus.className = "text-sm leading-7 text-red-400 sm:col-span-2";
+            }
+            return;
+          }
+
+          const subject = encodeURIComponent(`MPIKS Inquiry: ${session}`);
+          const body = encodeURIComponent(
+            `Name: ${name}\nEmail: ${email}\nSession Type: ${session}\n\nProject Details:\n${message}`
+          );
+
+          window.location.href = `mailto:muema1476@gmail.com?subject=${subject}&body=${body}`;
+
+          if (formStatus) {
+            formStatus.textContent = "Your email app should open now with your inquiry ready to send.";
+            formStatus.className = "text-sm leading-7 text-gold sm:col-span-2";
+          }
+        });
+      }
 
       function hideLoader() {
         if (!pageLoader || pageLoader.classList.contains("is-hidden")) {
